@@ -382,6 +382,16 @@ CFLAGS_KERNEL	=
 AFLAGS_KERNEL	=
 CFLAGS_GCOV	= -fprofile-arcs -ftest-coverage -fno-tree-loop-im
 CFLAGS_KCOV	= -fsanitize-coverage=trace-pc
+# Optimization flags specific to clang
+CLANG_OPT_FLAGS := -O3 -mcpu=kryo \
+		-mllvm -polly \
+		-mllvm -polly-run-dce \
+		-mllvm -polly-run-inliner \
+		-mllvm -polly-opt-fusion=max \
+		-mllvm -polly-ast-use-context \
+		-mllvm -polly-detect-keep-going \
+		-mllvm -polly-vectorizer=stripmine \
+		-mllvm -polly-invariant-load-hoisting
 
 OPT_FLAGS	:= -mcpu=kryo -funsafe-math-optimizations -ffast-math \
 		   -fvectorize -fslp-vectorize -fopenmp $(POLLY_FLAGS)
