@@ -347,6 +347,7 @@ scripts/Kbuild.include: ;
 include scripts/Kbuild.include
 
 POLLY_FLAGS	:= -O3 $(O3_OPTS) -mcpu=kryo \
+		   -funsafe-math-optimizations \
 	       	   -mllvm -polly \
 		   -mllvm -polly-parallel -lgomp \
 		   -mllvm -polly-run-dce \
@@ -385,14 +386,14 @@ CFLAGS_GCOV	= -fprofile-arcs -ftest-coverage -fno-tree-loop-im
 CFLAGS_KCOV	= -fsanitize-coverage=trace-pc
 # Optimization flags specific to clang
 CLANG_OPT_FLAGS := -O3 $(O3_OPTS) -mcpu=kryo \
+		-funsafe-math-optimizations \
 		-mllvm -polly \
 		-mllvm -polly-run-dce \
 		-mllvm -polly-run-inliner \
 		-mllvm -polly-opt-fusion=max \
 		-mllvm -polly-ast-use-context \
 		-mllvm -polly-detect-keep-going \
-		-mllvm -polly-vectorizer=stripmine \
-		-mllvm -polly-invariant-load-hoisting
+		-mllvm -polly-vectorizer=stripmine
 
 OPT_FLAGS	:= -mcpu=kryo.cortex-a73.cortex-a53 -mtune=kryo.cortex-a73.cortex-a53 -fno-signed-zeros -freciprocal-math -ffp-contract=fast -funsafe-math-optimizations -ffast-math -floop-nest-optimize -fgraphite-identity -ftree-loop-distribution \
 		   -fvectorize -fslp-vectorize -fopenmp $(POLLY_FLAGS)
