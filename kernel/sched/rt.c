@@ -11,7 +11,8 @@
 #include <trace/events/sched.h>
 #include <linux/hrtimer.h>
 
-#include "tune.h"
+#include "walt.h"
+#include "tune.h" 
 
 int sched_rr_timeslice = RR_TIMESLICE;
 
