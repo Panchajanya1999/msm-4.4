@@ -30,8 +30,9 @@ module_param(input_boost_duration, short, 0644);
 #define MAX_BOOST		BIT(3)
 
 #ifdef CONFIG_DYNAMIC_STUNE_BOOST
-static int dynamic_stune_boost;
+static int dynamic_stune_boost,boost_slot;
 module_param(dynamic_stune_boost, uint, 0644);
+static bool stune_boost_active;
 #endif /* CONFIG_DYNAMIC_STUNE_BOOST */
 
 struct boost_drv {
@@ -168,10 +169,12 @@ static void input_boost_worker(struct work_struct *work)
 		set_boost_bit(b, INPUT_BOOST);
 		update_online_cpu_policy();
 	}
-
+	int ret;
 #ifdef CONFIG_DYNAMIC_STUNE_BOOST
 	/* Set dynamic stune boost value */
-	do_stune_boost("top-app", dynamic_stune_boost);
+	ret = do_stune_boost("top-app", dynamic_stune_boost);
+	if (!ret)
+		stune_boost_active = true;
 #endif /* CONFIG_DYNAMIC_STUNE_BOOST */
 
 	queue_delayed_work(b->wq, &b->input_unboost,
@@ -187,7 +190,10 @@ static void input_unboost_worker(struct work_struct *work)
 
 #ifdef CONFIG_DYNAMIC_STUNE_BOOST
 	/* Reset dynamic stune boost value to the default value */
-	reset_stune_boost("top-app");
+	if (stune_boost_active) {
+		reset_stune_boost("top-app");
+		stune_boost_active = false;
+	}
 #endif /* CONFIG_DYNAMIC_STUNE_BOOST */
 
 	update_online_cpu_policy();
@@ -323,8 +329,11 @@ static void cpu_input_boost_input_disconnect(struct input_handle *handle)
 {
 #ifdef CONFIG_DYNAMIC_STUNE_BOOST
 	/* Reset dynamic stune boost value to the default value */
-	reset_stune_boost("top-app");
-#endif
+	if (stune_boost_active) {
+		reset_stune_boost("top-app");
+		stune_boost_active = false;
+	}
+#endif /* CONFIG_DYNAMIC_STUNE_BOOST */
 
 	input_close_device(handle);
 	input_unregister_handle(handle);
