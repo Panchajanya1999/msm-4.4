@@ -172,7 +172,7 @@ static void input_boost_worker(struct work_struct *work)
 	int ret;
 #ifdef CONFIG_DYNAMIC_STUNE_BOOST
 	/* Set dynamic stune boost value */
-	ret = do_stune_boost("top-app", dynamic_stune_boost);
+	ret = do_stune_boost("top-app", dynamic_stune_boost, &boost_slot);
 	if (!ret)
 		stune_boost_active = true;
 #endif /* CONFIG_DYNAMIC_STUNE_BOOST */
@@ -191,7 +191,7 @@ static void input_unboost_worker(struct work_struct *work)
 #ifdef CONFIG_DYNAMIC_STUNE_BOOST
 	/* Reset dynamic stune boost value to the default value */
 	if (stune_boost_active) {
-		reset_stune_boost("top-app");
+		reset_stune_boost("top-app", boost_slot);
 		stune_boost_active = false;
 	}
 #endif /* CONFIG_DYNAMIC_STUNE_BOOST */
@@ -330,7 +330,7 @@ static void cpu_input_boost_input_disconnect(struct input_handle *handle)
 #ifdef CONFIG_DYNAMIC_STUNE_BOOST
 	/* Reset dynamic stune boost value to the default value */
 	if (stune_boost_active) {
-		reset_stune_boost("top-app");
+		reset_stune_boost("top-app", boost_slot);
 		stune_boost_active = false;
 	}
 #endif /* CONFIG_DYNAMIC_STUNE_BOOST */
