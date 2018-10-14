@@ -441,6 +441,8 @@ int smblib_get_prop_charging_enabled(struct smb_charger *chg,
 /* Huaqin add for ZQL1650-189 by diganyun at 2018/02/01 end */
 int smblib_get_prop_batt_present(struct smb_charger *chg,
 				union power_supply_propval *val);
+int smblib_get_prop_batt_charge_full(struct smb_charger *chg,
+				union power_supply_propval *val);				
 int smblib_get_prop_batt_capacity(struct smb_charger *chg,
 				union power_supply_propval *val);
 int smblib_get_prop_batt_status(struct smb_charger *chg,
