@@ -1260,8 +1260,6 @@ void do_set_cpus_allowed(struct task_struct *p, const struct cpumask *new_mask)
 	bool queued, running;
 	cpumask_t adjusted_mask;
 
-	get_adjusted_cpumask(p, &adjusted_mask, new_mask);
-	new_mask = &adjusted_mask;
 
 	new_mask = get_adjusted_cpumask(p, new_mask);
 
@@ -1307,8 +1305,6 @@ static int __set_cpus_allowed_ptr(struct task_struct *p,
 	int ret = 0;
 	cpumask_t allowed_mask, adjusted_mask;
 
-	get_adjusted_cpumask(p, &adjusted_mask, new_mask);
-	new_mask = &adjusted_mask;
 
 	new_mask = get_adjusted_cpumask(p, new_mask);
 
