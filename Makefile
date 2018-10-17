@@ -346,7 +346,8 @@ export KBUILD_CHECKSRC KBUILD_SRC KBUILD_EXTMOD
 scripts/Kbuild.include: ;
 include scripts/Kbuild.include
 
-POLLY_FLAGS	:= -mllvm -polly \
+POLLY_FLAGS	:= -O3 -mcpu=kryo \
+	       	   -mllvm -polly \
 		   -mllvm -polly-parallel -lgomp \
 		   -mllvm -polly-run-dce \
 		   -mllvm -polly-run-inliner \
