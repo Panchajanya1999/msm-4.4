@@ -307,8 +307,8 @@ CCACHE	:= $(shell which ccache)
 
 HOSTCC       = $(CCACHE) gcc
 HOSTCXX      = $(CCACHE) g++
-HOSTCFLAGS   = -Wall -Wmissing-prototypes -Wstrict-prototypes -O2 -fomit-frame-pointer -std=gnu89
-HOSTCXXFLAGS = -O2 $(O3_OPTS)
+HOSTCFLAGS   := -Wall -Wmissing-prototypes -Wstrict-prototypes -O2 -fomit-frame-pointer -std=gnu89
+HOSTCXXFLAGS = -O3 $(O3_OPTS)
 
 
 # Decide whether to build built-in, modular, or both.
@@ -695,7 +695,7 @@ KBUILD_CFLAGS	+= $(call cc-option,-Oz,-Os)
 else
 ifeq ($(cc-name),clang)
 
-KBUILD_CFLAGS	+= -O3 $(OPT_FLAGS)
+KBUILD_CFLAGS	+= -O3 $(OPT_FLAGS) $(call cc-option, -fsanitize=local-init)
 else
 ifdef CONFIG_PROFILE_ALL_BRANCHES
 KBUILD_CFLAGS	+= -O2
