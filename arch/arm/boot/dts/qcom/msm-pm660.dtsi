@@ -384,7 +384,7 @@
 			// Added by huqinmin remove Type-C for micro-usb 2018/1/31 end
 /* Huaqin modify for ZQL1650 by fangaijun  at 2018/02/2 start */
 /* Huaqin modify for ZQL1650-70 optimize Adapter ID by fangaijun at 2018/02/9 start */
-			qcom,fcc-max-ua = <1000000>;
+			qcom,fcc-max-ua = <2000000>;
 /* Huaqin modify for ZQL1650-70 optimize Adapter ID by fangaijun at 2018/02/9 end */
 			qcom,fv-max-uv = <4350000>;
 /* Huaqin modify for ZQL1650-70 optimize Adapter ID by fangaijun at 2018/02/9 start */
