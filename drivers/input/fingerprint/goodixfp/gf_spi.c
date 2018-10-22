@@ -509,7 +509,7 @@ static int gf_open(struct inode *inode, struct file *filp)
 	struct gf_dev *gf_dev;
 	int status = -ENXIO;
 
-	mutex_lock(&device_list_lock);
+	rt_mutex_lock(&device_list_lock);
 
 	list_for_each_entry(gf_dev, &device_list, device_entry) {
 		if (gf_dev->devt == inode->i_rdev) {
@@ -549,7 +549,7 @@ static int gf_open(struct inode *inode, struct file *filp)
 	} else {
 		pr_info("No device for minor %d\n", iminor(inode));
 	}
-	mutex_unlock(&device_list_lock);
+	rt_mutex_unlock(&device_list_lock);
 	return status;
 }
 
@@ -570,7 +570,7 @@ static int gf_release(struct inode *inode, struct file *filp)
 	struct gf_dev *gf_dev;
 	int status = 0;
 
-	mutex_lock(&device_list_lock);
+	rt_mutex_lock(&device_list_lock);
 	gf_dev = filp->private_data;
 	filp->private_data = NULL;
 
@@ -585,7 +585,7 @@ static int gf_release(struct inode *inode, struct file *filp)
 		gf_dev->device_available = 0;
 		gf_power_off(gf_dev);
 	}
-	mutex_unlock(&device_list_lock);
+	rt_mutex_unlock(&device_list_lock);
 	return status;
 }
 
@@ -693,7 +693,7 @@ static int gf_probe(struct platform_device *pdev)
 	/* If we can allocate a minor number, hook up this device.
 	 * Reusing minors is fine so long as udev or mdev is working.
 	 */
-	mutex_lock(&device_list_lock);
+	rt_mutex_lock(&device_list_lock);
 	minor = find_first_zero_bit(minors, N_SPI_MINORS);
 	if (minor < N_SPI_MINORS) {
 		struct device *dev;
@@ -705,7 +705,7 @@ static int gf_probe(struct platform_device *pdev)
 	} else {
 		dev_dbg(&gf_dev->spi->dev, "no minor number available!\n");
 		status = -ENODEV;
-		mutex_unlock(&device_list_lock);
+		rt_mutex_unlock(&device_list_lock);
 		goto error_hw;
 	}
 
@@ -715,7 +715,7 @@ static int gf_probe(struct platform_device *pdev)
 	} else {
 		gf_dev->devt = 0;
 	}
-	mutex_unlock(&device_list_lock);
+	rt_mutex_unlock(&device_list_lock);
 
 	if (status == 0) {
 		/*input device subsystem */
@@ -771,11 +771,11 @@ error_input:
 error_dev:
 	if (gf_dev->devt != 0) {
 		pr_info("Err: status = %d\n", status);
-		mutex_lock(&device_list_lock);
+		rt_mutex_lock(&device_list_lock);
 		list_del(&gf_dev->device_entry);
 		device_destroy(gf_class, gf_dev->devt);
 		clear_bit(MINOR(gf_dev->devt), minors);
-		mutex_unlock(&device_list_lock);
+		rt_mutex_unlock(&device_list_lock);
 	}
 error_hw:
 	//gf_cleanup(gf_dev);
@@ -802,7 +802,7 @@ static int gf_remove(struct platform_device *pdev)
 	input_free_device(gf_dev->input);
 
 	/* prevent new opens */
-	mutex_lock(&device_list_lock);
+	rt_mutex_lock(&device_list_lock);
 	list_del(&gf_dev->device_entry);
 	device_destroy(gf_class, gf_dev->devt);
 	clear_bit(MINOR(gf_dev->devt), minors);
@@ -811,7 +811,7 @@ static int gf_remove(struct platform_device *pdev)
 
 
 	fb_unregister_client(&gf_dev->notifier);
-	mutex_unlock(&device_list_lock);
+	rt_mutex_unlock(&device_list_lock);
 
 	return 0;
 }
