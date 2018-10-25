@@ -49,9 +49,9 @@ static DEFINE_SPINLOCK(suspend_freeze_lock);
 
 void freeze_set_ops(const struct platform_freeze_ops *ops)
 {
-	lock_system_sleep();
+	rt_mutex_lock(&pm_mutex);
 	freeze_ops = ops;
-	unlock_system_sleep();
+	rt_mutex_unlock(&pm_mutex);
 }
 
 static void freeze_begin(void)
@@ -138,7 +138,7 @@ void suspend_set_ops(const struct platform_suspend_ops *ops)
 	suspend_state_t i;
 	int j = 0;
 
-	lock_system_sleep();
+	rt_mutex_lock(&pm_mutex);
 
 	suspend_ops = ops;
 	for (i = PM_SUSPEND_MEM; i >= PM_SUSPEND_STANDBY; i--)
@@ -151,7 +151,7 @@ void suspend_set_ops(const struct platform_suspend_ops *ops)
 
 	pm_states[PM_SUSPEND_FREEZE] = pm_labels[j];
 
-	unlock_system_sleep();
+	rt_mutex_unlock(&pm_mutex);
 }
 EXPORT_SYMBOL_GPL(suspend_set_ops);
 
@@ -288,7 +288,7 @@ static int suspend_prepare(suspend_state_t state)
 		return 0;
 
 	suspend_stats.failed_freeze++;
-	dpm_save_failed_step(SUSPEND_FREEZE);
+	suspend_thaw_processes();
  Finish:
 	__pm_notifier_call_chain(PM_POST_SUSPEND, nr_calls, NULL);
 	pm_restore_console();
@@ -533,7 +533,7 @@ static int enter_state(suspend_state_t state)
 	pr_debug("PM: Finishing wakeup.\n");
 	suspend_finish();
  Unlock:
-	mutex_unlock(&pm_mutex);
+	rt_mutex_unlock(&pm_mutex);
 	return error;
 }
 
