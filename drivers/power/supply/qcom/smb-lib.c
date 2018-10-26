@@ -2772,15 +2772,8 @@ int smblib_get_prop_die_health(struct smb_charger *chg,
 }
 
 #define SDP_CURRENT_UA			500000
-#define CDP_CURRENT_UA			1500000
-/* Huaqin add for ZQL1650-1287 factory version remove before BC1.2 500mA before adapter id 1000mA by fangaijun at 2018/5/8 start */
-#ifdef HQ_BUILD_FACTORY
-/* Huaqin add for ZQL1650-71 before BC1.2 500mA before adapter id 1000mA by fangaijun at 2018/4/4 start */
-#define DCP_CURRENT_UA			2000000
-/* Huaqin add for ZQL1650-71 before BC1.2 500mA before adapter id 1000mA by fangaijun at 2018/4/4 end */
-#else
-#define DCP_CURRENT_UA			500000
-#endif
+#define CDP_CURRENT_UA			2700000
+#define DCP_CURRENT_UA			3000000
 /* Huaqin add for ZQL1650-1287 factory version remove before BC1.2 500mA before adapter id 1000mA by fangaijun at 2018/5/8 end */
 #define HVDCP_CURRENT_UA		3000000
 #define TYPEC_DEFAULT_CURRENT_UA	900000
@@ -3840,7 +3833,7 @@ void jeita_rule(void)
 		//FV_CFG_reg_value = SMBCHG_FLOAT_VOLTAGE_VALUE_4P357;
 		//FCC_reg_value = SMBCHG_FAST_CHG_CURRENT_VALUE_850MA;
 		FV_CFG_reg_value = SMBCHG_FLOAT_VOLTAGE_VALUE_4P350;                   //reg=1070
-		FCC_reg_value = SMBCHG_FAST_CHG_CURRENT_VALUE_1400MA;                //reg=1061
+		FCC_reg_value = SMBCHG_FAST_CHG_CURRENT_VALUE_3000MA;                //reg=1061
 		printk("%s: 0 <= temperature < 10\n", __func__);
 		rc = SW_recharge(smbchg_dev);
 		if (rc < 0) {
@@ -3883,7 +3876,7 @@ void jeita_rule(void)
 		//FV_CFG_reg_value = SMBCHG_FLOAT_VOLTAGE_VALUE_4P357;
 		//FCC_reg_value = SMBCHG_FAST_CHG_CURRENT_VALUE_1475MA;
 		FV_CFG_reg_value = SMBCHG_FLOAT_VOLTAGE_VALUE_4P350;                   //reg=1070
-		FCC_reg_value = SMBCHG_FAST_CHG_CURRENT_VALUE_2000MA;             //reg=1061
+		FCC_reg_value = SMBCHG_FAST_CHG_CURRENT_VALUE_3000MA;             //reg=1061
 		printk("%s: 10 <= temperature < 50\n", __func__);
 		rc = SW_recharge(smbchg_dev);
 		if (rc < 0) {
@@ -3902,13 +3895,13 @@ void jeita_rule(void)
 #endif
 		charging_enable = EN_BAT_CHG_EN_COMMAND_TRUE;
 		FV_CFG_reg_value = SMBCHG_FLOAT_VOLTAGE_VALUE_4P004;
-		FCC_reg_value = SMBCHG_FAST_CHG_CURRENT_VALUE_2000MA;
+		FCC_reg_value = SMBCHG_FAST_CHG_CURRENT_VALUE_3000MA;
 		printk("%s: 50 <= temperature < 60\n", __func__);
 		break;
 	case JEITA_STATE_LARGER_THAN_600:
 		charging_enable = EN_BAT_CHG_EN_COMMAND_FALSE;
 		FV_CFG_reg_value = SMBCHG_FLOAT_VOLTAGE_VALUE_4P004;
-		FCC_reg_value = SMBCHG_FAST_CHG_CURRENT_VALUE_1475MA;
+		FCC_reg_value = SMBCHG_FAST_CHG_CURRENT_VALUE_3000MA;
 		printk("%s: temperature >= 60\n", __func__);
 		break;
 	}
@@ -4018,12 +4011,7 @@ void asus_chg_flow_work(struct work_struct *work)
 	const struct apsd_result *apsd_result;
 	int rc;
 	u8 set_icl;
-/* Huaqin add for ZQL1650-1287 factory version remove before BC1.2 500mA before adapter id 1000mA by fangaijun at 2018/5/8 start */
-#ifndef HQ_BUILD_FACTORY
-/* Huaqin add for ZQL1650-71 before BC1.2 500mA before adapter id 1000mA by fangaijun at 2018/4/4 start */
 	u8 USBIN_1_cc;
-/* Huaqin add for ZQL1650-71 before BC1.2 500mA before adapter id 1000mA by fangaijun at 2018/4/4 end */
-#endif
 /* Huaqin add for ZQL1650-1287 factory version remove before BC1.2 500mA before adapter id 1000mA by fangaijun at 2018/5/8 end */
 	//u8 legacy_cable_reg;
 	//bool cc_attached;
@@ -4099,16 +4087,14 @@ void asus_chg_flow_work(struct work_struct *work)
 	case FLOAT_CHARGER_BIT:
 		printk("asus_chg_flow_work enter FLOAT_CHARGER_BIT\n");
 /* Huaqin add for ZQL1650-1287 factory version remove before BC1.2 500mA before adapter id 1000mA by fangaijun at 2018/5/8 start */
-#ifndef HQ_BUILD_FACTORY
 /* Huaqin add for ZQL1650-71 before BC1.2 500mA before adapter id 1000mA by fangaijun at 2018/4/4 start */
 		rc = smblib_read(smbchg_dev, USBIN_CURRENT_LIMIT_CFG_REG, &USBIN_1_cc);   //reg=1370
 		if (rc < 0)
 			printk("%s: Couldn't read fast_CURRENT_LIMIT_CFG_REG\n", __func__);
 		printk("asus_chg_flow_work usbmode_USBIN_1_cc=0x%x\n",USBIN_1_cc);
 /* Huaqin add for ZQL1650-71 before BC1.2 500mA before adapter id 1000mA by fangaijun at 2018/4/4 end */
-#endif
 /* Huaqin add for ZQL1650-1287 factory version remove before BC1.2 500mA before adapter id 1000mA by fangaijun at 2018/5/8 end */
-			set_icl = ICL_500mA;
+			set_icl = ICL_3000mA;
 		rc = smblib_masked_write(smbchg_dev, USBIN_CURRENT_LIMIT_CFG_REG,
 			USBIN_CURRENT_LIMIT_MASK, set_icl);
 		if (rc < 0)
@@ -4120,21 +4106,19 @@ void asus_chg_flow_work(struct work_struct *work)
 	case CDP_CHARGER_BIT:
 		printk("asus_chg_flow_work enter CDP_CHARGER_BIT\n");
 /* Huaqin modify for ZQL1650 modify CDP charging current by fangaijun at 2018/04/18 start*/
-			set_icl = ICL_1500mA;
+			set_icl = ICL_3000mA;
 /* Huaqin modify for ZQL1650 modify CDP charging current by fangaijun at 2018/04/18 end*/
 		rc = smblib_masked_write(smbchg_dev, USBIN_CURRENT_LIMIT_CFG_REG,     //reg=1370   bit7-bit0=USBIN_CURRENT_LIMIT
 			USBIN_CURRENT_LIMIT_MASK, set_icl);
 		if (rc < 0)
 			printk("%s: Failed to set USBIN_CURRENT_LIMIT\n", __func__);
 /* Huaqin add for ZQL1650-1287 factory version remove before BC1.2 500mA before adapter id 1000mA by fangaijun at 2018/5/8 start */
-#ifndef HQ_BUILD_FACTORY
 /* Huaqin modify for ZQL1650 modify CDP charging current by fangaijun at 2018/04/18 start*/
 		rc = smblib_read(smbchg_dev, USBIN_CURRENT_LIMIT_CFG_REG, &USBIN_1_cc);   //reg=1370
 		if (rc < 0)
 			printk("%s: Couldn't read fast_CURRENT_LIMIT_CFG_REG\n", __func__);
 		printk("asus_chg_flow_work cdp_USBIN_1_cc=0x%x\n",USBIN_1_cc);
 /* Huaqin modify for ZQL1650 modify CDP charging current by fangaijun at 2018/04/18 end*/
-#endif
 /* Huaqin add for ZQL1650-1287 factory version remove before BC1.2 500mA before adapter id 1000mA by fangaijun at 2018/5/8 end */
 		asus_smblib_rerun_aicl(smbchg_dev);
 		//asus_adapter_detecting_flag = 0;
@@ -4142,7 +4126,7 @@ void asus_chg_flow_work(struct work_struct *work)
 		break;
 	case OCP_CHARGER_BIT:
 		printk("asus_chg_flow_work entert OCP_CHARGER_BIT");
-			set_icl = ICL_1000mA;                                                                                                                                 //reg=1370 bit7-bit0
+			set_icl = ICL_3000mA;                                                                                                                                 //reg=1370 bit7-bit0
 		rc = smblib_masked_write(smbchg_dev, USBIN_CURRENT_LIMIT_CFG_REG,
 			USBIN_CURRENT_LIMIT_MASK, set_icl);
 		if (rc < 0)
@@ -4170,14 +4154,13 @@ void asus_chg_flow_work(struct work_struct *work)
 #endif
 		printk("enter  asus_chg_flow_work  DCP_CHARGER_BIT\n");
 /* Huaqin add for ZQL1650-1287 factory version remove before BC1.2 500mA before adapter id 1000mA by fangaijun at 2018/5/8 start */
-#ifndef HQ_BUILD_FACTORY
 /* Huaqin add for ZQL1650-71 before BC1.2 500mA before adapter id 1000mA by fangaijun at 2018/4/4 start */
 		rc = smblib_read(smbchg_dev, USBIN_CURRENT_LIMIT_CFG_REG, &USBIN_1_cc);   //reg=1370
 		if (rc < 0)
 			printk("%s: Couldn't read fast_CURRENT_LIMIT_CFG_REG\n", __func__);
 		printk("asus_chg_flow_work dcp_USBIN_1_cc=0x%x\n",USBIN_1_cc);
 
-		set_icl = ICL_1000mA;                                                                                                                                 //reg=1370 bit7-bit0
+		set_icl = ICL_3000mA;                                                                                                                                 //reg=1370 bit7-bit0
 		rc = smblib_masked_write(smbchg_dev, USBIN_CURRENT_LIMIT_CFG_REG,
 			USBIN_CURRENT_LIMIT_MASK, set_icl);
 		if (rc < 0)
@@ -4187,7 +4170,6 @@ void asus_chg_flow_work(struct work_struct *work)
 			printk("%s: Couldn't read fast_CURRENT_LIMIT_CFG_REG\n", __func__);
 		printk("asus_chg_flow_work dcp_USBIN_2_cc=0x%x\n",USBIN_1_cc);
 /* Huaqin add for ZQL1650-71 before BC1.2 500mA before adapter id 1000mA by fangaijun at 2018/4/4 end */
-#endif
 /* Huaqin add for ZQL1650-1287 factory version remove before BC1.2 500mA before adapter id 1000mA by fangaijun at 2018/5/8 end */
 		rc = gpio_direction_output(global_gpio->ADC_SW_EN, 1);	//USB DPDM Switch to ADC(2D)
 		if (rc) {
@@ -4311,30 +4293,30 @@ void asus_adapter_adc_work(struct work_struct *work)
 	//determine current-setting value for DCP type AC:
 	switch (ASUS_ADAPTER_ID) {
 	case ASUS_750K:
-			usb_max_current = ICL_2000mA;
+			usb_max_current = ICL_3000mA;
 		break;
 	case ASUS_200K:
-			usb_max_current = ICL_2000mA;
+			usb_max_current = ICL_3000mA;
 		break;
 	case PB:
-			usb_max_current = ICL_2000mA;
+			usb_max_current = ICL_3000mA;
 		break;
 	case OTHERS:
 /* Huaqin modify for ZQL1650-74 Countrycode Adapter by diganyun at 2018/03/26 start */
 		if(BR_countrycode == COUNTRY_BR || BR_countrycode == COUNTRY_IN)
 			{
-			usb_max_current = ICL_2000mA;
+			usb_max_current = ICL_3000mA;
 			printk("country  BR or IN \n");
 			}
 		else
 			{
 			printk("ASUS_ADAPTER_ID  OTHERS \n");
-			usb_max_current = ICL_1000mA;
+			usb_max_current = ICL_3000mA;
 			}
 /* Huaqin modify for ZQL1650-74 Countrycode Adapter by diganyun at 2018/03/26 end */
 		break;
 	case ADC_NOT_READY:
-		usb_max_current = ICL_1000mA;
+		usb_max_current = ICL_3000mA;
 		break;
 	}
 	rc = smblib_set_usb_suspend(smbchg_dev, 0);
@@ -4397,12 +4379,7 @@ void asus_adapter_adc_work(struct work_struct *work)
 void asus_insertion_initial_settings(struct smb_charger *chg)
 {
 	int rc;
-/* Huaqin add for ZQL1650-1287 factory version remove before BC1.2 500mA before adapter id 1000mA by fangaijun at 2018/5/8 start */
-#ifndef HQ_BUILD_FACTORY
-/* Huaqin add for ZQL1650-71 before BC1.2 500mA before adapter id 1000mA by fangaijun at 2018/4/4 start */
 	u8 USBIN_cc;
-/* Huaqin add for ZQL1650-71 before BC1.2 500mA before adapter id 1000mA by fangaijun at 2018/4/4 end */
-#endif
 /* Huaqin add for ZQL1650-1287 factory version remove before BC1.2 500mA before adapter id 1000mA by fangaijun at 2018/5/8 end */
 	CHG_DBG("%s: start\n", __func__);
 //No.1
@@ -4411,7 +4388,7 @@ void asus_insertion_initial_settings(struct smb_charger *chg)
 		dev_err(chg->dev, "Couldn't set default PRE_CHARGE_CURRENT_CFG_REG rc=%d\n", rc);
 	}
 //No.2
-	rc = smblib_write(chg, FAST_CHARGE_CURRENT_CFG_REG, 0x28);                                      //reg=1061      0x38 1475mA  gaiwei  0x28 1000mA
+	rc = smblib_write(chg, FAST_CHARGE_CURRENT_CFG_REG, 0x78);                                      //reg=1061      0x38 1475mA  gaiwei  0x28 1000mA
 	if (rc < 0) {
 		dev_err(chg->dev, "Couldn't set default FAST_CHARGE_CURRENT_CFG_REG rc=%d\n", rc);
 	}
@@ -4496,14 +4473,13 @@ void asus_insertion_initial_settings(struct smb_charger *chg)
 		dev_err(chg->dev, "Couldn't set default USBIN_LOAD_CFG_REG rc=%d\n", rc);
 	}
 /* Huaqin add for ZQL1650-1287 factory version remove before BC1.2 500mA before adapter id 1000mA by fangaijun at 2018/5/8 start */
-#ifndef HQ_BUILD_FACTORY
 /* Huaqin add for ZQL1650-71 before BC1.2 500mA before adapter id 1000mA by fangaijun at 2018/4/4 start */	                                                                                                                                   //reg=1370 bit7-bit0
 	rc = smblib_read(chg, USBIN_CURRENT_LIMIT_CFG_REG, &USBIN_cc);   //reg=1370    usb in current
 	if (rc < 0)
 		printk("%s: Couldn't read fast_CURRENT_LIMIT_CFG_REG\n", __func__);
 	printk("asus_insertion_initial_setting USBIN_cc1=0x%x\n",USBIN_cc);
 	rc = smblib_masked_write(chg, USBIN_CURRENT_LIMIT_CFG_REG,
-			USBIN_CURRENT_LIMIT_MASK, 0x14);
+			USBIN_CURRENT_LIMIT_MASK, 0x78);
 	if (rc < 0)
 			CHG_DBG_E("%s: Failed to set USBIN_CURRENT_LIMIT\n", __func__);
 	rc = smblib_read(chg, USBIN_CURRENT_LIMIT_CFG_REG, &USBIN_cc);   //reg=1370    usb in current
@@ -4511,7 +4487,6 @@ void asus_insertion_initial_settings(struct smb_charger *chg)
 		printk("%s: Couldn't read fast_CURRENT_LIMIT_CFG_REG\n", __func__);
 	printk("asus_insertion_initial_setting USBIN_cc2=0x%x\n",USBIN_cc);
 /* Huaqin add for ZQL1650-71 before BC1.2 500mA before adapter id 1000mA by fangaijun at 2018/4/4 end */
-#endif
 /* Huaqin add for ZQL1650-1287 factory version remove before BC1.2 500mA before adapter id 1000mA by fangaijun at 2018/5/8 end */
 }
 /* Huaqin add for ZQL1650-68 Realize jeita function by fangaijun at 2018/02/03 end */
