@@ -561,8 +561,8 @@ static ssize_t kgsl_pwrctrl_thermal_pwrlevel_store(struct device *dev,
 
 	mutex_lock(&device->mutex);
 
-	if (level > pwr->num_pwrlevels - 2)
-		level = pwr->num_pwrlevels - 2;
+	if (level > pwr->num_pwrlevels - 1)
+		level = pwr->num_pwrlevels - 1;
 
 	pwr->thermal_pwrlevel = level;
 
@@ -638,14 +638,14 @@ static void kgsl_pwrctrl_min_pwrlevel_set(struct kgsl_device *device,
 	struct kgsl_pwrctrl *pwr = &device->pwrctrl;
 
 	mutex_lock(&device->mutex);
-	if (level > pwr->num_pwrlevels - 2)
-		level = pwr->num_pwrlevels - 2;
+	if (level > pwr->num_pwrlevels - 1)
+		level = pwr->num_pwrlevels - 1;
 
 	/* You can't set a minimum power level lower than the maximum */
 	if (level < pwr->max_pwrlevel)
 		level = pwr->max_pwrlevel;
 
-	pwr->min_pwrlevel = level;
+	pwr->min_pwrlevel = 19200000;
 
 	/* Update the current level using the new limit */
 	kgsl_pwrctrl_pwrlevel_change(device, pwr->active_pwrlevel);
