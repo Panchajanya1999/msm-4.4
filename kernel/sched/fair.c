@@ -4284,7 +4284,6 @@ static inline void update_load_avg(struct sched_entity *se, int flags)
 	struct cfs_rq *cfs_rq = cfs_rq_of(se);
 	u64 now = cfs_rq_clock_task(cfs_rq);
 	int cpu = cpu_of(rq_of(cfs_rq));
-	int decayed;
 	void *ptr = NULL;
 
 	/*
@@ -4297,7 +4296,7 @@ static inline void update_load_avg(struct sched_entity *se, int flags)
 			  cfs_rq->curr == se, NULL);
 	}
 
-	if (update_cfs_rq_load_avg(now, cfs_rq, true) && update_tg)
+	if (update_cfs_rq_load_avg(now, cfs_rq, true))
 		update_tg_load_avg(cfs_rq, 0);
 
 	if (entity_is_task(se)) {
