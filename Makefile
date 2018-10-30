@@ -394,7 +394,7 @@ CLANG_OPT_FLAGS := -O3 -mcpu=kryo \
 		-mllvm -polly-vectorizer=stripmine \
 		-mllvm -polly-invariant-load-hoisting
 
-OPT_FLAGS	:= -mcpu=kryo -funsafe-math-optimizations -ffast-math \
+OPT_FLAGS	:= -mcpu=kryo.cortex-a73.cortex-a53 -mtune=cortex-a73.cortex-a53 -fno-signed-zeros -freciprocal-math -ffp-contract=fast -funsafe-math-optimizations -ffast-math -floop-nest-optimize -fgraphite-identity -ftree-loop-distribution \
 		   -fvectorize -fslp-vectorize -fopenmp $(POLLY_FLAGS)
 
 # Use USERINCLUDE when you must reference the UAPI directories only.
