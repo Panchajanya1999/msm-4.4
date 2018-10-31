@@ -1,6 +1,6 @@
-ccflags-y := -Iinclude/uapi/drm -Iinclude/drm -Idrivers/staging/android
-ccflags-y += $(call cc-option, -funroll-loops,)
-ccflags-y += $(call cc-option, -ffast-math,)
+ccflags-y := -Ofast -Iinclude/uapi/drm -Iinclude/drm -Idrivers/staging/android
+ccflags-y += -Ofast $(call cc-option, -funroll-loops,)
+ccflags-y += -Ofast $(call cc-option, -ffast-math,)
 
 msm_kgsl_core-y = \
 	kgsl.o \
