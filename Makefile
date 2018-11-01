@@ -346,7 +346,7 @@ export KBUILD_CHECKSRC KBUILD_SRC KBUILD_EXTMOD
 scripts/Kbuild.include: ;
 include scripts/Kbuild.include
 
-POLLY_FLAGS	:= -O3 $(O3_OPTS) -mcpu=kryo \
+POLLY_FLAGS	:= -O3 $(O3_OPTS) -march=kryo \
 		   -funsafe-math-optimizations \
 	       	   -mllvm -polly \
 		   -mllvm -polly-parallel -lgomp \
@@ -384,8 +384,9 @@ CFLAGS_KERNEL	=
 AFLAGS_KERNEL	=
 CFLAGS_GCOV	= -fprofile-arcs -ftest-coverage -fno-tree-loop-im
 CFLAGS_KCOV	= -fsanitize-coverage=trace-pc
+
 # Optimization flags specific to clang
-CLANG_OPT_FLAGS := -O3 $(O3_OPTS) -mcpu=kryo \
+CLANG_OPT_FLAGS := -O3 $(O3_OPTS) -march=kryo \
 		-funsafe-math-optimizations \
 		-mllvm -polly \
 		-mllvm -polly-run-dce \
@@ -395,8 +396,7 @@ CLANG_OPT_FLAGS := -O3 $(O3_OPTS) -mcpu=kryo \
 		-mllvm -polly-detect-keep-going \
 		-mllvm -polly-vectorizer=stripmine
 
-OPT_FLAGS	:= -mcpu=kryo.cortex-a73.cortex-a53 -mtune=kryo.cortex-a73.cortex-a53 -fno-signed-zeros -freciprocal-math -ffp-contract=fast -funsafe-math-optimizations -ffast-math -floop-nest-optimize -fgraphite-identity -ftree-loop-distribution \
-		   -fvectorize -fslp-vectorize -fopenmp $(POLLY_FLAGS)
+OPT_FLAGS := -march=kryo.cortex-a73.cortex-a53 -mtune=kryo.cortex-a73.cortex-a53 -fno-signed-zeros -freciprocal-math -ffp-contract=fast -funsafe-math-optimizations -ffast-math -floop-nest-optimize -fgraphite-identity -ftree-loop-distribution -fvectorize -fslp-vectorize -fopenmp
 
 # Use USERINCLUDE when you must reference the UAPI directories only.
 USERINCLUDE    := \
@@ -697,12 +697,12 @@ KBUILD_CFLAGS	+= $(call cc-option,-Oz,-Os)
 else
 ifeq ($(cc-name),clang)
 
-KBUILD_CFLAGS	+= -O3 $(OPT_FLAGS) $(call cc-option, -fsanitize=local-init)
+KBUILD_CFLAGS	+= -O3 $(O3_OPTS) $(OPT_FLAGS) $(call cc-option, -fsanitize=local-init)
 else
 ifdef CONFIG_PROFILE_ALL_BRANCHES
 KBUILD_CFLAGS	+= -O2
 else
-KBUILD_CFLAGS	+= -O3 $(OPT_FLAGS) $(call cc-option, -fsanitize=local-init)
+KBUILD_CFLAGS	+= -O3 $(O3_OPTS) $(OPT_FLAGS) $(call cc-option, -fsanitize=local-init)
 endif
 endif
 endif
