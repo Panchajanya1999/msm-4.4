@@ -35,6 +35,7 @@ $(warning LSE atomics not supported by binutils)
 endif
 
 KBUILD_CFLAGS	+= $(call cc-option,-march=armv8-a+crypto+crc,) $(call cc-option,-mcpu=cortex-a73+crypto+crc,) $(call cc-option,-mcpu=cortex-a53+crypto+crc,)
+KBUILD_CFLAGS	+= $(call cc-option,-mcpu=kryo,)
 
 ifeq ($(cc-name),clang)
 KBUILD_CFLAGS	+= $(call clang-ifversion, -ge, 0600, -mgeneral-regs-only, -mno-implicit-float)
