@@ -527,7 +527,7 @@ static int cdfinger_fb_notifier_callback(struct notifier_block* self,
 /* Huaqin modify for cpu_boost by leiyu at 2018/04/25 start */
 		sched_set_boost(0);
 /* Huaqin modify for cpu_boost by leiyu at 2018/04/25 end */
-		printk("sunlin==FB_BLANK_UNBLANK==\n");
+		//printk("sunlin==FB_BLANK_UNBLANK==\n");
             break;
         case FB_BLANK_POWERDOWN:
 		mutex_lock(&g_cdfingerfp_data->buf_lock);
@@ -535,7 +535,7 @@ static int cdfinger_fb_notifier_callback(struct notifier_block* self,
 		if (isInKeyMode == 0)
 			cdfinger_async_report();
 		mutex_unlock(&g_cdfingerfp_data->buf_lock);
-		printk("sunlin==FB_BLANK_POWERDOWN==\n");
+		//printk("sunlin==FB_BLANK_POWERDOWN==\n");
             break;
         default:
             break;
