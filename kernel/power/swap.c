@@ -714,7 +714,7 @@ static int save_image_lzo(struct swap_map_handle *handle,
 		init_waitqueue_head(&data[thr].go);
 		init_waitqueue_head(&data[thr].done);
 
-		data[thr].thr = kthread_run(lzo_compress_threadfn,
+		data[thr].thr = kthread_run_perf_critical(lzo_compress_threadfn,
 		                            &data[thr],
 		                            "image_compress/%u", thr);
 		if (IS_ERR(data[thr].thr)) {
@@ -739,7 +739,7 @@ static int save_image_lzo(struct swap_map_handle *handle,
 		crc->unc_len[thr] = &data[thr].unc_len;
 	}
 
-	crc->thr = kthread_run(crc32_threadfn, crc, "image_crc32");
+	crc->thr = kthread_run_perf_critical(crc32_threadfn, crc, "image_crc32");
 	if (IS_ERR(crc->thr)) {
 		crc->thr = NULL;
 		printk(KERN_ERR "PM: Cannot start CRC32 thread\n");
@@ -1214,7 +1214,7 @@ static int load_image_lzo(struct swap_map_handle *handle,
 		init_waitqueue_head(&data[thr].go);
 		init_waitqueue_head(&data[thr].done);
 
-		data[thr].thr = kthread_run(lzo_decompress_threadfn,
+		data[thr].thr = kthread_run_perf_critical(lzo_decompress_threadfn,
 		                            &data[thr],
 		                            "image_decompress/%u", thr);
 		if (IS_ERR(data[thr].thr)) {
@@ -1239,7 +1239,7 @@ static int load_image_lzo(struct swap_map_handle *handle,
 		crc->unc_len[thr] = &data[thr].unc_len;
 	}
 
-	crc->thr = kthread_run(crc32_threadfn, crc, "image_crc32");
+	crc->thr = kthread_run_perf_critical(crc32_threadfn, crc, "image_crc32");
 	if (IS_ERR(crc->thr)) {
 		crc->thr = NULL;
 		printk(KERN_ERR "PM: Cannot start CRC32 thread\n");
