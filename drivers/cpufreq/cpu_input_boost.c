@@ -203,6 +203,9 @@ static void input_boost_worker(struct work_struct *work)
 	if (!cancel_delayed_work_sync(&b->input_unboost)) {
 		set_boost_bit(b, INPUT_BOOST);
 		update_online_cpu_policy();
+
+		set_stune_boost(b, state, INPUT_STUNE_BOOST, input_stune_boost,
+			&b->input_stune_slot);
 	}
 	int ret;
 #ifdef CONFIG_DYNAMIC_STUNE_BOOST
@@ -214,9 +217,6 @@ static void input_boost_worker(struct work_struct *work)
 
 	queue_delayed_work(b->wq, &b->input_unboost,
 		msecs_to_jiffies(input_boost_duration));
-
-	set_stune_boost(b, state, INPUT_STUNE_BOOST, input_stune_boost,
-		&b->input_stune_slot);
 }
 
 static void input_unboost_worker(struct work_struct *work)
@@ -247,13 +247,13 @@ static void max_boost_worker(struct work_struct *work)
 	if (!cancel_delayed_work_sync(&b->max_unboost)) {
 		set_boost_bit(b, MAX_BOOST);
 		update_online_cpu_policy();
+
+		set_stune_boost(b, state, MAX_STUNE_BOOST, max_stune_boost,
+			&b->max_stune_slot);
 	}
 
 	queue_delayed_work(b->wq, &b->max_unboost,
-		msecs_to_jiffies(atomic_read(&b->max_boost_dur)));
-
-	set_stune_boost(b, state, MAX_STUNE_BOOST, max_stune_boost,
-		&b->max_stune_slot);
+		msecs_to_jiffies(atomic_read(&b->max_boost_dur)));	
 }
 
 static void max_unboost_worker(struct work_struct *work)
