@@ -336,6 +336,15 @@
 
 #define KEY_MICMUTE		248	/* Mute / unmute the microphone */
 
+#if defined(CONFIG_MACH_ASUS_X00T) && (defined(CONFIG_TOUCHSCREEN_NT36xxx) || defined(CONFIG_TOUCHSCREEN_SYNAPTICS_DSX_v27))
+#define KEY_TP_GESTURE_C 	249
+#define KEY_TP_GESTURE_E 	250
+#define KEY_TP_GESTURE_S 	251
+#define KEY_TP_GESTURE_V 	252
+#define KEY_TP_GESTURE_W 	253
+#define KEY_TP_GESTURE_Z 	254
+#endif
+
 /* Code 255 is reserved for special needs of AT keyboard driver */
 
 #define BTN_MISC		0x100
@@ -604,6 +613,18 @@
 #define KEY_BRIGHTNESS_MIN		0x250	/* Set Brightness to Minimum */
 #define KEY_BRIGHTNESS_MAX		0x251	/* Set Brightness to Maximum */
 
+#ifdef CONFIG_MACH_ASUS_X00T
+#if defined(CONFIG_CDFINGER_FP) || defined(CONFIG_GOODIX_FP)
+#define FP_KEY_UP		0x258
+#define FP_KEY_DOWN		0x259
+#define FP_KEY_LEFT		0x25a
+#define FP_KEY_RIGHT		0x25b
+#define FP_KEY_CLICK		0x25c
+#define FP_KEY_DOUBLE_CLICK	0x25d
+#define FP_KEY_LONG_PRESS	0x25e
+#endif
+#endif
+
 #define KEY_KBDINPUTASSIST_PREV		0x260
 #define KEY_KBDINPUTASSIST_NEXT		0x261
 #define KEY_KBDINPUTASSIST_PREVGROUP		0x262
@@ -652,6 +673,11 @@
 #define BTN_TRIGGER_HAPPY38		0x2e5
 #define BTN_TRIGGER_HAPPY39		0x2e6
 #define BTN_TRIGGER_HAPPY40		0x2e7
+
+#if defined(CONFIG_MACH_ASUS_X00T) && defined(CONFIG_INPUT_SX9310)
+#define KEY_SARSENSOR_NEAR		0x2ea
+#define KEY_SARSENSOR_FAR		0x2eb
+#endif
 
 /* We avoid low common keys in module aliases so they don't get huge. */
 #define KEY_MIN_INTERESTING	KEY_MUTE

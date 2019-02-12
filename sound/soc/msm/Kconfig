@@ -60,16 +60,6 @@ config DOLBY_LICENSE
 	 This is required by Dolby GEF implementation which needs
 	 nothing but dolby license validation functionality in driver.
 
-config DTS_EAGLE
-	bool "Enable DTS Eagle Support"
-	depends on SND_SOC_MSM_QDSP6V2_INTF
-	select SND_HWDEP
-	help
-	 To add DTS Eagle support on QDSP6 targets.
-	 Eagle is a DTS pre/post processing
-	 package that includes HeadphoneX. The configuration
-	 includes sending tuning parameters of various modules.
-
 config DTS_SRS_TM
 	bool "Enable DTS SRS"
 	depends on SND_SOC_MSM_QDSP6V2_INTF
@@ -126,11 +116,8 @@ config SND_SOC_INT_CODEC
 	select SND_SOC_MSM_HDMI_CODEC_RX
 	select QTI_PP
 	select DTS_SRS_TM
-	select DOLBY_LICENSE
 	select SND_HWDEP
 	select MSM_ULTRASOUND
-	select DTS_EAGLE
-	select SND_SOC_SDM660_COMMON
 	select SND_SOC_COMPRESS
 	select PINCTRL_LPI
 	help
@@ -159,13 +146,10 @@ config SND_SOC_EXT_CODEC
 	select MFD_CORE
 	select QTI_PP
 	select DTS_SRS_TM
-	select DOLBY_LICENSE
 	select SND_SOC_CPE
 	select SND_SOC_WCD_CPE
 	select SND_HWDEP
 	select MSM_ULTRASOUND
-	select DTS_EAGLE
-	select SND_SOC_SDM660_COMMON
 	select SND_SOC_COMPRESS
 	select PINCTRL_LPI
 	help
@@ -193,9 +177,7 @@ config SND_SOC_MSM8996
 	select QTI_PP_AUDIOSPHERE
 	select SND_SOC_CPE
 	select MSM_ULTRASOUND
-	select DOLBY_DS2
 	select SND_HWDEP
-        select DTS_EAGLE
 	help
 	 To add support for SoC audio on MSM8996.
 	 This will enable sound soc drivers which
@@ -240,9 +222,7 @@ config SND_SOC_MSM8998
 	select QTI_PP
 	select SND_SOC_CPE
 	select MSM_ULTRASOUND
-	select DOLBY_LICENSE
 	select SND_HWDEP
-        select DTS_EAGLE
 	help
 	 To add support for SoC audio on MSM8998.
 	 This will enable sound soc drivers which
@@ -250,7 +230,7 @@ config SND_SOC_MSM8998
 	 the machine driver and the corresponding
 	 DAI-links
 
-config SND_SOC_660
+config SND_SOC_SDM660_COMMON
 	tristate "SoC Machine driver for SDM660 boards"
 	depends on ARCH_SDM660
 	select SND_SOC_INT_CODEC

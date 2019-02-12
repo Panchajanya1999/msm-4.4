@@ -294,6 +294,10 @@ static void msm_restart_prepare(const char *cmd)
 				(cmd != NULL && cmd[0] != '\0'));
 	}
 
+#ifdef CONFIG_QCOM_PRESERVE_MEM
+	need_warm_reset = true;
+#endif
+
 	/* Hard reset the PMIC unless memory contents must be maintained. */
 	if (need_warm_reset) {
 		qpnp_pon_system_pwr_off(PON_POWER_OFF_WARM_RESET);
@@ -331,6 +335,11 @@ static void msm_restart_prepare(const char *cmd)
 			unsigned long reset_reason;
 			int ret;
 			ret = kstrtoul(cmd + 4, 16, &code);
+#ifdef CONFIG_MACH_ASUS_X00T
+			if (!ret && code == 8)
+				qpnp_pon_set_restart_reason(
+					PON_RESTART_REASON_ASUS_UNLOCK);
+#endif
 			if (!ret) {
 				/* Bit-2 to bit-7 of SOFT_RB_SPARE for hard
 				 * reset reason:

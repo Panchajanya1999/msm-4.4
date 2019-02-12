@@ -34,8 +34,16 @@
 #include "mdss_debug.h"
 #include "mdss_dsi_phy.h"
 #include "mdss_dba_utils.h"
+#ifdef CONFIG_MACH_ASUS_X00T
+#include "mdss_panel.h"
+#endif
+#include "mdss_livedisplay.h"
 
 #define CMDLINE_DSI_CTL_NUM_STRING_LEN 2
+
+#ifdef CONFIG_MACH_ASUS_X00T
+extern char mdss_mdp_panel[MDSS_MAX_PANEL_LEN];
+#endif
 
 /* Master structure to hold all the information about the DSI/panel */
 static struct mdss_dsi_data *mdss_dsi_res;
@@ -363,6 +371,11 @@ static int mdss_dsi_regulator_init(struct platform_device *pdev,
 	return rc;
 }
 
+#ifdef CONFIG_MACH_ASUS_X00T
+extern void mdss_dsi_panel_cmds_send(struct mdss_dsi_ctrl_pdata *ctrl,
+					struct dsi_panel_cmds *pcmds,
+					u32 flags);
+#endif
 static int mdss_dsi_panel_power_off(struct mdss_panel_data *pdata)
 {
 	int ret = 0;
@@ -385,6 +398,10 @@ static int mdss_dsi_panel_power_off(struct mdss_panel_data *pdata)
 
 	if (mdss_dsi_pinctrl_set_state(ctrl_pdata, false))
 		pr_debug("reset disable: pinctrl not enabled\n");
+
+#ifdef CONFIG_MACH_ASUS_X00T
+	mdelay(5);
+#endif
 
 	ret = msm_dss_enable_vreg(
 		ctrl_pdata->panel_power_data.vreg_config,
@@ -1321,6 +1338,10 @@ static int mdss_dsi_off(struct mdss_panel_data *pdata, int power_state)
 		goto panel_power_ctrl;
 	}
 
+#ifdef CONFIG_MACH_ASUS_X00T
+	ret = mdss_dsi_panel_power_ctrl(pdata, power_state);
+#endif
+
 	/*
 	 * Link clocks should be turned off before PHY can be disabled.
 	 * For command mode panels, all clocks are turned off prior to reaching
@@ -1348,11 +1369,13 @@ static int mdss_dsi_off(struct mdss_panel_data *pdata, int power_state)
 			  MDSS_DSI_CORE_CLK, MDSS_DSI_CLK_OFF);
 
 panel_power_ctrl:
+#ifndef CONFIG_MACH_ASUS_X00T
 	ret = mdss_dsi_panel_power_ctrl(pdata, power_state);
 	if (ret) {
 		pr_err("%s: Panel power off failed\n", __func__);
 		goto end;
 	}
+#endif
 
 	if (panel_info->dynamic_fps
 	    && (panel_info->dfps_update == DFPS_SUSPEND_RESUME_MODE)
@@ -3107,6 +3130,9 @@ static int mdss_dsi_event_handler(struct mdss_panel_data *pdata,
 					rc);
 		}
 		break;
+	case MDSS_EVENT_UPDATE_LIVEDISPLAY:
+		rc = mdss_livedisplay_update(ctrl_pdata, (int)(unsigned long) arg);
+		break;
 	default:
 		pr_debug("%s: unhandled event=%d\n", __func__, event);
 		break;
@@ -3171,6 +3197,9 @@ static struct device_node *mdss_dsi_pref_prim_panel(
  *
  * returns pointer to panel node on success, NULL on error.
  */
+#if defined(CONFIG_MACH_ASUS_X00T) && defined(CONFIG_TOUCHSCREEN_NT36xxx)
+int nvt_tp_check;
+#endif
 static struct device_node *mdss_dsi_find_panel_of_node(
 		struct platform_device *pdev, char *panel_cfg)
 {
@@ -3237,6 +3266,13 @@ static struct device_node *mdss_dsi_find_panel_of_node(
 		}
 		pr_info("%s: cmdline:%s panel_name:%s\n",
 			__func__, panel_cfg, panel_name);
+#if defined(CONFIG_MACH_ASUS_X00T) && defined(CONFIG_TOUCHSCREEN_NT36xxx)
+		if (!strcmp(panel_name, "qcom,mdss_dsi_nt36672_1080p_video"))
+			nvt_tp_check = 0;
+		else if (!strcmp(panel_name,
+				"qcom,mdss_dsi_nt36672_1080p_video_txd"))
+			nvt_tp_check = 1;
+#endif
 		if (!strcmp(panel_name, NONE_PANEL))
 			goto exit;
 
