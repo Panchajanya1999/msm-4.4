@@ -613,7 +613,7 @@ static int cdfinger_probe(struct platform_device *pdev)
 	  cdfingerdev->cdfinger_input = NULL;
 	  goto unregister_dev;
 	}
-	fp_boost_wq = alloc_workqueue("fp_cpuboost_wq", WQ_HIGHPRI, 0);
+	fp_boost_wq = alloc_workqueue("fp_cpuboost_wq", WQ_HIGHPRI | WQ_UNBOUND, 0);
 	if (!fp_boost_wq)
 		return -EFAULT;
 	INIT_WORK(&fp_boost_work, do_fp_boost);
