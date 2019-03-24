@@ -39,7 +39,7 @@ module_param(dynamic_stune_boost, uint, 0644);
 static bool stune_boost_active;
 
 static __read_mostly int input_stune_boost = CONFIG_INPUT_BOOST_STUNE_LEVEL;
-module_param_named(dynamic_stune_boost, input_stune_boost, int, 0644);
+module_param(input_stune_boost, int, 0644);
 
 static __read_mostly int max_stune_boost = CONFIG_MAX_BOOST_STUNE_LEVEL;
 module_param(max_stune_boost, int, 0644);
