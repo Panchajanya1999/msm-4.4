@@ -60,7 +60,6 @@ extern struct timespec last_jeita_time;
 static struct alarm bat_alarm;
 /* global gpio_control */
 extern struct gpio_control *global_gpio;
-static int ASUS_ADAPTER_ID;
 #define CHG_ALERT_HOT_NTC_VOLTAFE	237229 /* 70 deg C */
 #define CHG_ALERT_WARM_NTC_VOLTAGE	320588 /* 60 deg C */
 #define THM_ALERT_NONE		0 /* temp good */
@@ -77,24 +76,6 @@ int asus_get_prop_batt_volt(struct smb_charger *chg);
 int asus_get_prop_batt_capacity(struct smb_charger *chg);
 int asus_get_prop_batt_health(struct smb_charger *chg);
 int asus_get_prop_usb_present(struct smb_charger *chg);
-
-enum ADAPTER_ID {
-	NONE = 0,
-	ASUS_750K,
-	ASUS_200K,
-	PB,
-	OTHERS,
-	ADC_NOT_READY,
-};
-
-static char *asus_id[] = {
-	"NONE",
-	"ASUS_750K",
-	"ASUS_200K",
-	"PB",
-	"OTHERS",
-	"ADC_NOT_READY",
-};
 
 char *health_type[] = {
 	"GOOD",
@@ -3430,13 +3411,6 @@ void asus_batt_RTC_work(struct work_struct *dat)
 #define ICL_2850mA	0x72
 #define ICL_3000mA	0x78
 #define ASUS_MONITOR_CYCLE	60000
-#define TITAN_750K_MIN	675
-#define TITAN_750K_MAX	851
-#define TITAN_200K_MIN	306
-#define TITAN_200K_MAX	406
-#define VADC_THD_300MV	300
-#define VADC_THD_900MV	900
-#define VADC_THD_1000MV	1000
 
 /* ASUS BSP Add per min monitor jeita & thermal & typeC_DFP */
 void smblib_asus_monitor_start(struct smb_charger *chg, int time)
@@ -3962,58 +3936,6 @@ void asus_chg_flow_work(struct work_struct *work)
 	}
 }
 
-extern int32_t get_ID_vadc_voltage(void);
-static void CHG_TYPE_judge(struct smb_charger *chg)
-{
-	int adc_result;
-	int ret;
-	int MIN_750K, MAX_750K, MIN_200K, MAX_200K;
-
-	MIN_750K = TITAN_750K_MIN;
-	MAX_750K = TITAN_750K_MAX;
-	MIN_200K = TITAN_200K_MIN;
-	MAX_200K = TITAN_200K_MAX;
-
-	/* read charger ID via pm660 gpio3 */
-	adc_result = get_ID_vadc_voltage();
-
-	/* vdm1 < 0.3v */
-	if (adc_result <= VADC_THD_300MV) {
-		ret = gpio_direction_output(global_gpio->ADCPWREN_PMI_GP1, 1);
-		if (ret)
-			pr_err("%s: failed to pull-high ADCPWREN_PMI_GP1-gpios34\n",
-				__func__);
-		else
-			pr_debug("%s: Pull high ADC_VH_EN\n", __func__);
-
-		msleep(500);
-
-		/* vdm2 > 1v */
-		adc_result = get_ID_vadc_voltage();
-		if (adc_result >= VADC_THD_1000MV) {
-			ASUS_ADAPTER_ID = OTHERS;
-		} else {
-			/* 0.675 < adc_result < 0.851 */
-			if (adc_result >= MIN_750K && adc_result <= MAX_750K) {
-				ASUS_ADAPTER_ID = ASUS_750K;
-			/* 0.306 < adc_result <  0.406 */
-			} else if (adc_result >= MIN_200K &&
-					adc_result <= MAX_200K)
-				ASUS_ADAPTER_ID = ASUS_200K;
-			else
-				ASUS_ADAPTER_ID = OTHERS;
-		}
-	/* vdm1 */
-	} else {
-		if (adc_result >= VADC_THD_900MV)
-			ASUS_ADAPTER_ID = PB;
-		else
-			ASUS_ADAPTER_ID = OTHERS;
-	}
-
-	pr_debug("CHG_TYPE_judge ASUS_ADAPTER_ID=%d\n", ASUS_ADAPTER_ID);
-}
-
 void asus_adapter_adc_work(struct work_struct *work)
 {
 	int rc;
@@ -4037,19 +3959,9 @@ void asus_adapter_adc_work(struct work_struct *work)
 	msleep(5);
 	CHG_TYPE_judge(smbchg_dev);
 
-	/* determine current-setting value for DCP type AC: */
-	switch (ASUS_ADAPTER_ID) {
-	case ASUS_750K:
-	case ASUS_200K:
-	case PB:
-	case OTHERS:
-		usb_max_current = ICL_2000mA;
-		break;
+	//max current allowed in device
+	usb_max_current = ICL_2000mA;
 
-	case ADC_NOT_READY:
-		usb_max_current = ICL_1000mA;
-		break;
-	}
 
 	rc = smblib_set_usb_suspend(smbchg_dev, 0);
 	if (rc < 0)
@@ -4070,8 +3982,8 @@ void asus_adapter_adc_work(struct work_struct *work)
 	else
 		pr_debug("%s: Pull low USBSW_S\n", __func__);
 
-	pr_debug("%s: ASUS_ADAPTER_ID = %s, setting mA = 0x%x\n", __func__,
-			asus_id[ASUS_ADAPTER_ID], usb_max_current);
+	pr_debug("%s: setting mA = 0x%x\n", __func__,
+			usb_max_current);
 
 	/* Set current:
 	 * reg=1370, bit7-bit0=
