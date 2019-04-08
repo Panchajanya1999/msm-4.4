@@ -840,7 +840,6 @@ static void smblib_uusb_removal(struct smb_charger *chg)
 	alarm_cancel(&bat_alarm);
 
 	asus_flow_processing = 0;
-	ASUS_ADAPTER_ID = 0;
 
 	asus_smblib_relax(smbchg_dev);
 #endif /* CONFIG_MACH_ASUS_X00T */
@@ -4000,7 +3999,6 @@ void asus_adapter_adc_work(struct work_struct *work)
 			__func__);
 
 	msleep(5);
-	CHG_TYPE_judge(smbchg_dev);
 
 	//setting max allowed current from adapter
 	switch (adapter_ceeling_current) {
@@ -4018,7 +4016,7 @@ void asus_adapter_adc_work(struct work_struct *work)
 			break;
 		case 4:
 			usb_max_current = ICL_3000mA;
-			breakl
+			break;
 		case 5:
 			usb_max_current = ICL_1000mA;
 			break;
