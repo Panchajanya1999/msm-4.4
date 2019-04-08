@@ -59,11 +59,6 @@ extern struct timespec last_jeita_time;
 static struct alarm bat_alarm;
 /* global gpio_control */
 extern struct gpio_control *global_gpio;
-#define CHG_ALERT_HOT_NTC_VOLTAFE	237229 /* 70 deg C */
-#define CHG_ALERT_WARM_NTC_VOLTAGE	320588 /* 60 deg C */
-#define THM_ALERT_NONE		0 /* temp good */
-#define THM_ALERT_NO_AC		1 /* temp hot with otg */
-#define THM_ALERT_WITH_AC	2 /* temp hot with AC */
 void smblib_asus_monitor_start(struct smb_charger *chg, int time);
 
 bool smartchg_stop_flag;
