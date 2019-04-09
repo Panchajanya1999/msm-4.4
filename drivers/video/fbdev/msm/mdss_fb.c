@@ -49,9 +49,6 @@
 #include <linux/cpu_input_boost.h>
 #include <sync.h>
 #include <sw_sync.h>
-#ifdef CONFIG_MACH_ASUS_X00T
-#include <linux/wakelock.h>
-#endif
 
 #include "mdss_fb.h"
 #include "mdss_mdp_splash_logo.h"
@@ -63,7 +60,7 @@
 #include "mdss_livedisplay.h"
 
 #ifdef CONFIG_MACH_ASUS_X00T
-static struct wake_lock early_unblank_wakelock;
+static struct wakeup_source early_unblank_wakelock;
 extern bool lcd_suspend_flag;
 #endif
 
@@ -1673,7 +1670,7 @@ static void asus_lcd_early_unblank_func(struct work_struct *work)
 	if (!fbi)
 		return;
 
-	wake_lock_timeout(&early_unblank_wakelock,msecs_to_jiffies(300));
+	__pm_wakeup_event(&early_unblank_wakelock,msecs_to_jiffies(300));
 	fb_blank(fbi, FB_BLANK_UNBLANK);
 
 	lcd_suspend_flag = false;
@@ -5328,7 +5325,7 @@ int __init mdss_fb_init(void)
 #ifdef CONFIG_MACH_ASUS_X00T
 	asus_lcd_early_unblank_wq =
 			create_singlethread_workqueue("display_early_wq");
-	wake_lock_init(&early_unblank_wakelock, WAKE_LOCK_SUSPEND,
+	wakeup_source_init(&early_unblank_wakelock,
 			"early_unblank-update");
 #endif
 
