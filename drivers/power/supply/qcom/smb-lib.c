@@ -64,7 +64,7 @@ charge_mode	:	SMBCHG_FAST_CHG_CURRENT_VALUE
 4			:	3000MA
 other		:	2000MA
 */
-static unsigned int charge_mode = 1;
+static unsigned int charge_mode = 4;
 module_param(charge_mode, uint, S_IWUSR | S_IRUGO);
 
 /*
@@ -77,7 +77,7 @@ adapter_ceeling_current	:	ICL VALUE
 5						:	1000MA
 other					:	2000MA
 */
-static unsigned int adapter_ceeling_current = 1;
+static unsigned int adapter_ceeling_current = 2;
 module_param(adapter_ceeling_current, uint, S_IWUSR | S_IRUGO);
 
 extern struct smb_charger *smbchg_dev;
