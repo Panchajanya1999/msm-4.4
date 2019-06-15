@@ -16,6 +16,7 @@
 #include <linux/io.h>
 #include <linux/spinlock.h>
 #include <linux/sched.h>
+#include <linux/sched/rt.h>
 #include <linux/kthread.h>
 #include <linux/cdev.h>
 #include <linux/fs.h>
@@ -39,10 +40,8 @@
 #include <linux/regulator/consumer.h>
 #include <linux/fb.h>
 #include <linux/notifier.h>
-/* Huaqin modify for cpu_boost by leiyu at 2018/04/25 start */
-#include <linux/sched.h>
-/* Huaqin modify for cpu_boost by leiyu at 2018/04/25 end */
 #include "../common_X00T/fingerprint_common.h"
+#include <linux/cpu_input_boost.h>
 
 typedef struct key_report {
     int key;
@@ -115,11 +114,11 @@ static char wake_flag = 0;
 
 
 #define FP_BOOST_MS   500
-#define FP_BOOST_INTERVAL   (500*USEC_PER_MSEC)
+#define FP_BOOST_INTERVAL   (FP_BOOST_MS*USEC_PER_MSEC)
 
-static struct workqueue_struct *fp_boost_wq;
-
-static struct work_struct fp_boost_work;
+static struct kthread_work fp_boost_work;
+static struct kthread_worker fp_boost_worker;
+static struct task_struct *fp_boost_worker_thread;
 static struct delayed_work fp_boost_rem;
 static bool fp_boost_active=false;
 
@@ -154,52 +153,27 @@ static struct cdfinger_key_map maps[] = {
 	{ EV_KEY, CF_NAV_INPUT_LONG_PRESS },
 };
 
-
-
-static void do_fp_boost_rem(struct work_struct *work)
+static void do_fp_boost_rem(struct kthread_work *work)
 {
-	unsigned int ret;
 
-	/* Update policies for all online CPUs */
 	if(fp_boost_active) {
-		ret = sched_set_boost(0);
-		if (ret)
-			pr_err("cpu-boost: HMP boost disable failed\n");
 		fp_boost_active = false;
 	}
 }
 
-static void do_fp_boost(struct work_struct *work)
+
+static void do_fp_boost(struct kthread_work *work)
 {
-	unsigned int ret;
 
 	cancel_delayed_work_sync(&fp_boost_rem);
 	if(fp_boost_active==false) {
-		ret = sched_set_boost(1);
-		if (ret)
-			pr_err("cpu-boost: HMP boost enable failed\n");
-		else
+		cpu_input_boost_kick();
 			fp_boost_active=true;
 	}
-	queue_delayed_work(fp_boost_wq, &fp_boost_rem,
+	schedule_delayed_work(&fp_boost_rem,
 					msecs_to_jiffies(FP_BOOST_MS));
+
 }
-
-static void fp_cpuboost(void)
-{
-	u64 now;
-	static u64 last_time=0;
-
-	now = ktime_to_us(ktime_get());
-	if (now - last_time <FP_BOOST_INTERVAL)
-		return;
-
-	if (work_pending(&fp_boost_work))
-		return;
-
-	queue_work(fp_boost_wq, &fp_boost_work);
-	last_time = ktime_to_us(ktime_get());
-} 
 
 static int cdfinger_init_gpio(struct cdfingerfp_data *cdfinger)
 {
@@ -360,7 +334,7 @@ static irqreturn_t cdfinger_eint_handler(int irq, void *dev_id)
 	struct cdfingerfp_data *pdata = g_cdfingerfp_data;
 	if (pdata->irq_enable_status == 1)
 	{
-		fp_cpuboost();
+		cpu_input_boost_kick_max(100);
 		cdfinger_wake_lock(pdata,1);
 		cdfinger_async_report();
 	}
@@ -577,6 +551,13 @@ static int cdfinger_probe(struct platform_device *pdev)
 	struct cdfingerfp_data *cdfingerdev= NULL;
 	int status = -ENODEV;
 	int i = 0;
+	struct sched_param param = { .sched_priority = 2 };
+	cpumask_t sys_bg_mask;
+
+        /* Hardcode the cpumask to bind the kthread to it */
+	for (i = 0; i <= 2; i++) {
+		cpumask_set_cpu(i, &sys_bg_mask);
+	}
 
 	CDFINGER_DBG("cdfinger probe ing\n");
 	status = misc_register(&st_cdfinger_dev);
@@ -612,10 +593,19 @@ static int cdfinger_probe(struct platform_device *pdev)
 	  cdfingerdev->cdfinger_input = NULL;
 	  goto unregister_dev;
 	}
-	fp_boost_wq = alloc_workqueue("fp_cpuboost_wq", WQ_HIGHPRI | WQ_UNBOUND, 0);
-	if (!fp_boost_wq)
+	init_kthread_worker(&fp_boost_worker);
+	fp_boost_worker_thread = kthread_create(kthread_worker_fn,&fp_boost_worker,"fp_boost_worker_thread");
+	if (IS_ERR(fp_boost_worker_thread)) {
+		pr_err("cdfingerfp: Failed to initaialize fp worker kthread");
 		return -EFAULT;
-	INIT_WORK(&fp_boost_work, do_fp_boost);
+	}
+	
+	sched_setscheduler(fp_boost_worker_thread, SCHED_FIFO, &param);
+	
+	/* Bind it to hardcoded cpumask and wake it up */
+	kthread_bind_mask(fp_boost_worker_thread, &sys_bg_mask);
+	wake_up_process(fp_boost_worker_thread);
+	init_kthread_work(&fp_boost_work, do_fp_boost);
 	INIT_DELAYED_WORK(&fp_boost_rem, do_fp_boost_rem);
 	
 	cdfingerdev->notifier.notifier_call = cdfinger_fb_notifier_callback;
